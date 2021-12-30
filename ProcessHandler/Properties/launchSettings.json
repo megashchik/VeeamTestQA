@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ProcessHandler": {
+      "commandName": "Project",
+      "commandLineArgs": "notepad 5 1"
+    }
+  }
+}
