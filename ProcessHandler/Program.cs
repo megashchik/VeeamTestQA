@@ -1,12 +1,11 @@
-﻿// See https://aka.ms/new-console-template for more information
-using ProcessHandler;
+﻿using ProcessHandler;
 using System.Diagnostics;
 
 System.AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
 
 Console.WriteLine("Run!");
 string logPath = "log.txt";
-//file.Position = file.Length;
+
 var listener = new TextWriterTraceListener(File.AppendText(logPath));
 Trace.AutoFlush = true;
 Trace.Listeners.Add(listener);
