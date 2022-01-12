@@ -21,15 +21,16 @@ if (!int.TryParse(args[2], out period))
 if (period < 0)
     throw new ArgumentException("The period must not be negative");
 
-var processes = Handler.GetProcesses(args[0]);
+var processes = GetProcesses(args[0]);
 var allottedTime = TimeSpan.FromMinutes(allotted);
 var periodTime = TimeSpan.FromMinutes(period);
 
-var handlers = new List<Handler>();
+var tasks = new List<Task>();
 
 foreach (var process in processes)
-    handlers.Add(new Handler(process, allottedTime, periodTime));
+    tasks.Add(new Handler(process, allottedTime, periodTime).HandleAsync());
 
+Task.WaitAll(tasks.ToArray());
 
 static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)
 {
@@ -37,4 +38,13 @@ static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs
     Trace.WriteLine(((Exception)e.ExceptionObject).Message);
     if(e.IsTerminating)
         Environment.Exit(-1);
+}
+
+
+static Process[] GetProcesses(string name)
+{
+    var processes = Process.GetProcessesByName(name);
+    if (processes.Length == 0)
+        throw new InvalidDataException($"Process {name} is not running");
+    return processes;
 }

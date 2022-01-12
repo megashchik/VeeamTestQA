@@ -11,7 +11,6 @@ namespace ProcessHandler
 
         Process Process { get; init; }
 
-        AutoResetEvent Timer { get; } = new AutoResetEvent(true);
 
         public Handler(Process process, TimeSpan allottedTime, TimeSpan waitInterval)
         {
@@ -19,7 +18,6 @@ namespace ProcessHandler
             AllottedTime = allottedTime;
             WaitInterval = waitInterval;
             InitStartTime();
-            Run();
         }
 
         void InitStartTime()
@@ -55,30 +53,17 @@ namespace ProcessHandler
             Trace.WriteLine($"{Process.ProcessName} was killed at {DateTime.Now.TimeOfDay}");
         }
 
-        void Handle()
+        public async Task HandleAsync()
         {
-            while (!Timer.WaitOne(WaitInterval) || (DateTime.Now - StartTime - AllottedTime).Ticks <= 0)
+            while (AllottedTimeEnded)
             {
+                await Task.Delay(WaitInterval);
                 if (Process.HasExited)
                     throw new InvalidOperationException($"Process {Process.ProcessName} has already been closed");
             }
             KillProcesses();
         }
 
-        void Run()
-        {
-            var thread = new Thread(Handle);
-            thread.IsBackground = false;
-            thread.Start();
-        }
-
-
-        public static Process[] GetProcesses(string name)
-        {
-            var processes = Process.GetProcessesByName(name);
-            if (processes.Length == 0)
-                throw new InvalidDataException($"Process {name} is not running");
-            return processes;
-        }
+        bool AllottedTimeEnded => (DateTime.Now - StartTime - AllottedTime).Ticks <= 0;
     }
 }
